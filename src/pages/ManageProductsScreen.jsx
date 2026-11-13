@@ -8,7 +8,8 @@ import {
   AlertCircle, 
   RefreshCw,
   Check,
-  Tag
+  Tag,
+  Edit
 } from 'lucide-react';
 
 export const ManageProductsScreen = () => {
@@ -97,17 +98,25 @@ export const ManageProductsScreen = () => {
             Manage <span className="text-brandOrange">Products Grid</span>
           </h1>
           <p className="text-gray-400 text-sm mt-1">
-            View all store items in a visual grid and update stock quantities instantly.
+            View all store items in a visual grid, update stock quantities, and edit product details instantly.
           </p>
         </div>
 
-        <button 
-          onClick={fetchProducts}
-          className="flex items-center space-x-2 bg-charcoal-dark hover:bg-gray-800 text-gray-300 border border-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold transition self-start md:self-auto"
-        >
-          <RefreshCw size={16} className={loading ? 'animate-spin text-brandOrange' : ''} />
-          <span>Refresh Products</span>
-        </button>
+        <div className="flex items-center space-x-3 self-start md:self-auto">
+          <Link 
+            to="/admin/product/create"
+            className="bg-brandOrange hover:bg-brandOrange-hover text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-lg shadow-brandOrange/20"
+          >
+            + Add Product
+          </Link>
+          <button 
+            onClick={fetchProducts}
+            className="flex items-center space-x-2 bg-charcoal-dark hover:bg-gray-800 text-gray-300 border border-gray-700 px-4 py-2.5 rounded-xl text-sm font-semibold transition"
+          >
+            <RefreshCw size={16} className={loading ? 'animate-spin text-brandOrange' : ''} />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
       {/* Content Area */}
@@ -186,9 +195,19 @@ export const ManageProductsScreen = () => {
                       <span className="font-mono text-white font-bold">Rs. {Number(product.price)?.toLocaleString()}</span>
                     </div>
 
-                    <h3 className="text-white font-bold text-base line-clamp-1" title={product.name}>
-                      {product.name}
-                    </h3>
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-white font-bold text-base line-clamp-1 flex-1" title={product.name}>
+                        {product.name}
+                      </h3>
+                      {/* Direct Edit Button Link */}
+                      <Link 
+                        to={`/admin/product/${product._id}/edit`}
+                        className="p-2 bg-charcoal-dark hover:bg-brandOrange text-gray-300 hover:text-white rounded-xl border border-gray-700 hover:border-brandOrange transition flex items-center justify-center"
+                        title="Edit Product Details"
+                      >
+                        <Edit size={14} />
+                      </Link>
+                    </div>
                   </div>
 
                   {/* Quantity Modifier Section */}

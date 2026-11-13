@@ -12,8 +12,20 @@ import {
   PackageX,
   RefreshCw,
   Truck,
-  Layers
+  Layers,
+  TrendingUp
 } from 'lucide-react';
+import { 
+  ResponsiveContainer, 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  CartesianGrid,
+  BarChart,
+  Bar
+} from 'recharts';
 
 export const AdminDashboardScreen = () => {
   const [products, setProducts] = useState([]);
@@ -68,6 +80,19 @@ export const AdminDashboardScreen = () => {
   const lowStockProducts = products.filter(p => Number(p.countInStock) <= 3);
   const totalRevenue = orders.reduce((sum, order) => sum + (Number(order.totalPrice) || 0), 0);
 
+  // Prepare Chart Data from Orders (Group by Date)
+  const chartDataMap = {};
+  orders.forEach(order => {
+    const dateStr = new Date(order.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (!chartDataMap[dateStr]) {
+      chartDataMap[dateStr] = { date: dateStr, sales: 0, ordersCount: 0 };
+    }
+    chartDataMap[dateStr].sales += Number(order.totalPrice) || 0;
+    chartDataMap[dateStr].ordersCount += 1;
+  });
+
+  const chartData = Object.values(chartDataMap);
+
   return (
     <div className="space-y-8 pb-12">
       
@@ -75,13 +100,13 @@ export const AdminDashboardScreen = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-charcoal border border-charcoal-light p-6 rounded-2xl shadow-xl">
         <div>
           <span className="text-brandOrange text-xs font-extrabold uppercase tracking-widest bg-brandOrange/10 px-3 py-1 rounded-full border border-brandOrange/20">
-            Live MongoDB API Mode
+            Live MongoDB API & Analytics Mode
           </span>
           <h1 className="text-3xl font-black text-white mt-2">
             Admin <span className="text-brandOrange">Control Center</span>
           </h1>
           <p className="text-gray-400 text-sm mt-1">
-            Real-time product inventory, order processing, and expense analytics.
+            Real-time product inventory, order processing, and visual sales analytics.
           </p>
         </div>
 
@@ -200,6 +225,83 @@ export const AdminDashboardScreen = () => {
               <p className="text-xs text-green-400 mt-1 font-medium">
                 Calculated from real orders
               </p>
+            </div>
+
+          </div>
+
+          {/* Visual Sales Analytics Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            {/* Sales Revenue Trend Chart */}
+            <div className="bg-charcoal border border-charcoal-light p-6 rounded-2xl shadow-xl space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-white flex items-center space-x-2">
+                    <TrendingUp size={18} className="text-brandOrange" />
+                    <span>Sales Revenue Trend</span>
+                  </h3>
+                  <p className="text-xs text-gray-400">Daily revenue generated from live orders</p>
+                </div>
+              </div>
+
+              <div className="h-72 w-full pt-4">
+                {chartData.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-gray-500 text-xs">
+                    No sales data available for charts yet.
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData}>
+                      <defs>
+                        <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#f97316" stopOpacity={0.4}/>
+                          <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" />
+                      <XAxis dataKey="date" stroke="#a0aec0" fontSize={11} />
+                      <YAxis stroke="#a0aec0" fontSize={11} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#1a202c', borderColor: '#4a5568', borderRadius: '10px', color: '#fff', fontSize: '12px' }}
+                      />
+                      <Area type="monotone" dataKey="sales" stroke="#f97316" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
+            </div>
+
+            {/* Orders Volume Chart */}
+            <div className="bg-charcoal border border-charcoal-light p-6 rounded-2xl shadow-xl space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-white flex items-center space-x-2">
+                    <ShoppingBag size={18} className="text-blue-400" />
+                    <span>Orders Volume</span>
+                  </h3>
+                  <p className="text-xs text-gray-400">Daily count of received store orders</p>
+                </div>
+              </div>
+
+              <div className="h-72 w-full pt-4">
+                {chartData.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-gray-500 text-xs">
+                    No order data available for charts yet.
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" />
+                      <XAxis dataKey="date" stroke="#a0aec0" fontSize={11} />
+                      <YAxis stroke="#a0aec0" fontSize={11} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#1a202c', borderColor: '#4a5568', borderRadius: '10px', color: '#fff', fontSize: '12px' }}
+                      />
+                      <Bar dataKey="ordersCount" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
             </div>
 
           </div>
